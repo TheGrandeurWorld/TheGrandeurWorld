@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Banque de Pitchs Scénaristiques</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 20px;
+      background: #f9f9f9;
+    }
+    header {
+      text-align: center;
+      margin-bottom: 30px;
+    }
+    h1 {
+      color: #2c3e50;
+    }
+    form, #importExport {
+      background: white;
+      padding: 15px;
+      border-radius: 8px;
+      box-shadow: 0 0 6px #ccc;
+      margin-bottom: 20px;
+    }
+    input[type="text"], textarea {
+      width: 100%;
+      padding: 8px;
+      margin-top: 6px;
+      margin-bottom: 12px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      resize: vertical;
+      font-size: 1rem;
+    }
+    button {
+      background-color: #2980b9;
+      color: white;
+      padding: 10px 15px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 1rem;
+      margin-right: 8px;
+    }
+    button:hover {
+      background-color: #1c5980;
+    }
+    .pitch {
+      background: white;
+      padding: 15px;
+      margin-bottom: 10px;
+      border-radius: 8px;
+      box-shadow: 0 0 4px #bbb;
+      position: relative;
+    }
+    .pitch h3 {
+      margin-top: 0;
+      word-break: break-word;
+    }
+    .pitch p {
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+    .pitch-buttons {
+      position: absolute;
+      top: 15px;
+      right: 15px;
+    }
+    .pitch-buttons button {
+      background-color: #e74c3c;
+      margin-left: 5px;
+      padding: 5px 8px;
+      font-size: 0.85rem;
+      border-radius: 4px;
+    }
+    .pitch-buttons button.edit {
+      background-color: #f39c12;
+    }
+    .pitch-buttons button:hover {
+      filter: brightness(0.85);
+    }
+    #search {
+      margin-bottom: 20px;
+      width: 100%;
+      padding: 8px;
+      font-size: 1rem;
+      border-radius: 4px;
+      border: 1px solid #ccc;
+    }
+    #importExport {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    #importExport > * {
+      margin: 5px 0;
+    }
+    #importFile {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <h1>Banque de Pitchs Scénaristiques</h1>
+  <p>Gère tes idées de scénarios simplement.</p>
+</header>
+
+<input type="text" id="search" placeholder="Rechercher un pitch..." />
+
+<form id="pitchForm">
+  <input type="hidden" id="editIndex" value="-1" />
+  <label for="title">Titre du pitch :</label>
+  <input type="text" id="title" required />
+
+  <label for="description">Description :</label>
+  <textarea id="description" rows="4" required></textarea>
+
+  <button type="submit">Ajouter le pitch</button>
+  <button type="button" id="cancelEdit" style="display:none; background:#7f8c8d;">Annuler</button>
+</form>
+
+<section id="pitchList">
+  <!-- Les pitchs apparaîtront ici -->
+</section>
+
+<section id="importExport">
+  <button id="exportBtn">Exporter les pitchs (JSON)</button>
+  <button id="importBtn">Importer un fichier JSON</button>
+  <input type="file" id="importFile" accept=".json" />
+</section>
+
+<script>
+  const pitchForm = document.getElementById('pitchForm');
+  const pitchList = document.getElementById('pitchList');
+  const searchInput = document.getElementById('search');
+  const STORAGE_KEY = 'pitchsScenaristiques';
+
+  const editIndexInput = document.getElementById('editIndex');
+  const cancelEditBtn = document.getElementById('cancelEdit');
+  const titleInput = document.getElementById('title');
+  const descriptionInput = document.getElementById('description');
+
+  const exportBtn = document.getElementById('exportBtn');
+  const importBtn = document.getElementById('importBtn');
+  const importFile = document.getElementById('importFile');
+
+  // Charger les pitchs depuis localStorage
+  let pitches = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+
+  function savePitches() {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(pitches));
+  }
+
+  function renderPitches(filter = '') {
+    pitchList.innerHTML = '';
+    const filtered = pitches.filter(p => 
+      p.title.toLowerCase().includes(filter.toLowerCase()) ||
+      p.description.toLowerCase().includes(filter.toLowerCase())
+    );
+    if (filtered.length === 0) {
+      pitchList.innerHTML = '<p>Aucun pitch trouvé.</p>';
+      return;
+    }
+    filtered.forEach((pitch, index) => {
+      const div = document.createElement('div');
+      div.className = 'pitch';
+      div.innerHTML = `
+        <h3>${escapeHtml(pitch.title)}</h3>
+        <p>${escapeHtml(pitch.description).replace(/\n/g, '<br>')}</p>
+        <div class="pitch-buttons">
+          <button class="edit" data-index="${index}" title="Modifier">&#9998;</button>
+          <button class="delete" data-index="${index}" title="Supprimer">&#10006;</button>
+        </div>
+      `;
+      pitchList.appendChild(div);
+    });
+
+    // Ajout des événements pour boutons modifier/supprimer
+    document.querySelectorAll('.pitch-buttons .edit').forEach(btn => {
+      btn.onclick = e => {
+        const i = parseInt(e.target.dataset.index);
+        startEditPitch(i);
+      };
+    });
+
+    document.querySelectorAll('.pitch-buttons .delete').forEach(btn => {
+      btn.onclick = e => {
+        const i = parseInt(e.target.dataset.index);
+        if (confirm('Supprimer ce pitch ?')) {
+          pitches.splice(i, 1);
+          savePitches();
+          renderPitches(searchInput.value);
+          resetForm();
+        }
+      };
+    });
+  }
+
+  pitchForm.addEventListener('submit', e => {
+    e.preventDefault();
+    const title = titleInput.value.trim();
+    const description = descriptionInput.value.trim();
+    const editIndex = parseInt(editIndexInput.value);
+
+    if (!title || !description) return;
+
+    if (editIndex === -1) {
+      // Ajouter nouveau pitch
+      pitches.push({title, description});
+    } else {
+      // Modifier pitch existant
+      pitches[editIndex] = {title, description};
+    }
+
+    savePitches();
+    renderPitches(searchInput.value);
+    resetForm();
+  });
+
+  searchInput.addEventListener('input', () => {
+    renderPitches(searchInput.value);
+  });
+
+  cancelEditBtn.addEventListener('click', e => {
+    e.preventDefault();
+    resetForm();
+  });
+
+  function startEditPitch(index) {
+    const pitch = pitches[index];
+    editIndexInput.value = index;
+    titleInput.value = pitch.title;
+    descriptionInput.value = pitch.description;
+    pitchForm.querySelector('button[type="submit"]').textContent = 'Modifier le pitch';
+    cancelEditBtn.style.display = 'inline-block';
+    titleInput.focus();
+  }
+
+  function resetForm() {
+    editIndexInput.value = -1;
+    pitchForm.reset();
+    pitchForm.querySelector('button[type="submit"]').textContent = 'Ajouter le pitch';
+    cancelEditBtn.style.display = 'none';
+  }
+
+  // Exporter les pitchs au format JSON
+  exportBtn.addEventListener('click', () => {
+    const dataStr = JSON.stringify(pitches, null, 2);
+    const blob = new Blob([dataStr], {type: 'application/json'});
+    const url = URL.createObjectURL(blob);
+
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'pitchs_scenaristiques.json';
+    a.click();
+
+    URL.revokeObjectURL(url);
+  });
+
+  // Importer un fichier JSON
+  importBtn.addEventListener('click', () => {
+    importFile.click();
+  });
+
+  importFile.addEventListener('change', e => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = evt => {
+      try {
+        const importedPitches = JSON.parse(evt.target.result);
+        if (!Array.isArray(importedPitches)) throw new Error('Format invalide');
+        // Vérifier chaque élément a bien un titre et une description
+        for (const p of importedPitches) {
+          if (typeof p.title !== 'string' || typeof p.description !== 'string') {
+            throw new Error('Format invalide');
+          }
+        }
+        // Remplacer la liste existante par les pitchs importés
+        pitches = importedPitches;
+        savePitches();
+        renderPitches(searchInput.value);
+        resetForm();
+        alert('Importation réussie !');
+      } catch (err) {
+        alert('Erreur lors de l\'importation : fichier JSON invalide.');
+      }
+    };
+    reader.readAsText(file);
+    // Reset pour pouvoir réimporter le même fichier si besoin
+    importFile.value = '';
+  });
+
+  // Échapper le HTML pour éviter les injections
+  function escapeHtml(text) {
+    const map = {
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      '"': '&quot;',
+      "'": '&#039;'
+    };
+    return text.replace(/[&<>"']/g, m => map[m]);
+  }
+
+  // Affichage initial des pitchs sauvegardés
+
+  renderPitches();
+// ==== Authentification Locale ====
+
+const PASSWORD_KEY = 'pitchAppPassword';
+const authScreen = document.getElementById('authScreen');
+const passwordInput = document.getElementById('passwordInput');
+const authMessage = document.getElementById('authMessage');
+
+function hash(str) {
+  // Simple hash (pour usage local seulement)
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    const chr = str.charCodeAt(i);
+    hash = (hash << 5) - hash + chr;
+    hash |= 0;
+  }
+  return hash;
+}
+
+function handleLogin() {
+  const pwd = passwordInput.value;
+  const saved = localStorage.getItem(PASSWORD_KEY);
+
+  if (!saved) {
+    // Aucun mot de passe enregistré : création
+    if (pwd.length < 4) {
+      authMessage.textContent = 'Mot de passe trop court (4 caractères min).';
+      return;
+    }
+    localStorage.setItem(PASSWORD_KEY, hash(pwd));
+    hideAuthScreen();
+  } else {
+    if (parseInt(saved) === hash(pwd)) {
+      hideAuthScreen();
+    } else {
+      authMessage.textContent = 'Mot de passe incorrect.';
+    }
+  }
+}
+
+function hideAuthScreen() {
+  authScreen.style.display = 'none';
+}
+
+</script>
+</body>
+<div id="authScreen" style="position:fixed;top:0;left:0;width:100%;height:100%;background:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:1000;">
+  <h2>Authentification requise</h2>
+  <input type="password" id="passwordInput" placeholder="Mot de passe" style="padding:8px;font-size:1rem;margin:10px 0;" />
+  <button onclick="handleLogin()">Connexion</button>
+  <p id="authMessage" style="color:red;"></p>
+</div>
+</html>
