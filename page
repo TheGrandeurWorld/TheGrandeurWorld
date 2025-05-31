@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ScriptMaster - Apprenez, Publiez, Produisez</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    * {
+      box-sizing: border-box;
+      transition: all 0.3s ease-in-out;
+    }
+    body {
+      margin: 0;
+      font-family: 'Inter', sans-serif;
+      background-color: #f9f9f9;
+      color: #333;
+      scroll-behavior: smooth;
+    }
+    header {
+      background: #1c1c1c;
+      color: white;
+      padding: 1rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 999;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.4);
+    }
+    nav a {
+      color: white;
+      margin-left: 1.5rem;
+      text-decoration: none;
+      font-weight: 500;
+    }
+    nav a:hover {
+      color: #ff3c3c;
+    }
+    .hero {
+      background: linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url('https://images.unsplash.com/photo-1581090700227-2fe1ddf85a74') center/cover no-repeat;
+      color: white;
+      text-align: center;
+      padding: 6rem 2rem;
+    }
+    .hero h1 {
+      font-size: 3rem;
+      margin-bottom: 1rem;
+    }
+    .hero button {
+      margin: 0.5rem;
+      padding: 1rem 2rem;
+      border: none;
+      background: #ff3c3c;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+      border-radius: 5px;
+    }
+    .hero button:hover {
+      background-color: #e03232;
+    }
+    .section {
+      padding: 4rem 2rem;
+      background-color: #fff;
+    }
+    .section:nth-child(even) {
+      background-color: #f0f0f0;
+    }
+    .section h2 {
+      text-align: center;
+      margin-bottom: 2rem;
+      color: #222;
+    }
+    .cards {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 2rem;
+    }
+    .card {
+      background: white;
+      padding: 1.5rem;
+      border-radius: 12px;
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.1);
+      width: 280px;
+      text-align: center;
+      transition: transform 0.3s;
+    }
+    .card:hover {
+      transform: translateY(-5px);
+    }
+    input, textarea {
+      padding: 0.7rem;
+      width: 100%;
+      max-width: 400px;
+      margin-bottom: 1rem;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+    button.submit-btn {
+      padding: 0.7rem 1.5rem;
+      background-color: #ff3c3c;
+      border: none;
+      border-radius: 5px;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    button.submit-btn:hover {
+      background-color: #e03232;
+    }
+    footer {
+      background: #1c1c1c;
+      color: white;
+      text-align: center;
+      padding: 2rem;
+      font-size: 0.9rem;
+    }
+    @media (max-width: 768px) {
+      .cards {
+        flex-direction: column;
+        align-items: center;
+      }
+      header, nav {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      nav a {
+        margin: 0.5rem 0;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div><strong>ScriptMaster</strong></div>
+    <nav>
+      <a href="#">Accueil</a>
+      <a href="#formations">Formations</a>
+      <a href="#publier">Publier un Script</a>
+      <a href="#productions">Productions</a>
+      <a href="#connexion">Connexion</a>
+    </nav>
+  </header>
+
+  <section class="hero">
+    <h1>Donnez vie à vos idées</h1>
+    <button onclick="scrollToSection('formations')">Découvrir les formations</button>
+    <button onclick="scrollToSection('publier')">Publier un script</button>
+  </section>
+
+  <section class="section" id="formations">
+    <h2>Nos Formations</h2>
+    <div class="cards">
+      <div class="card">Écriture</div>
+      <div class="card">Réalisation</div>
+      <div class="card">Scénarisation</div>
+      <div class="card">Montage</div>
+    </div>
+  </section>
+
+  <section class="section">
+    <h2>Scripts Populaires</h2>
+    <div class="cards">
+      <div class="card">"Le Dernier Script" - par A. Martin</div>
+      <div class="card">"Ombres Urbaines" - par L. Dubois</div>
+    </div>
+  </section>
+
+  <section class="section" id="productions">
+    <h2>Nos Productions</h2>
+    <div class="cards">
+      <div class="card">🎬 En cours : "L'Éveil"</div>
+      <div class="card">✅ Produit : "Soleil Noir"</div>
+    </div>
+  </section>
+
+  <section class="section">
+    <h2>Témoignages</h2>
+    <div class="cards">
+      <div class="card">"Une plateforme révolutionnaire pour les auteurs !" - Camille R.</div>
+      <div class="card">"Grâce à ScriptMaster, mon court-métrage est enfin produit !" - Julien D.</div>
+    </div>
+  </section>
+
+  <section class="section">
+    <h2>Inscrivez-vous à notre newsletter</h2>
+    <div style="text-align:center;">
+      <form onsubmit="subscribe(event)">
+        <input type="email" id="email" placeholder="Votre email" required>
+        <button class="submit-btn" type="submit">S'inscrire</button>
+      </form>
+      <p id="msg" style="color:green; font-weight: 500; margin-top: 1rem;"></p>
+    </div>
+  </section>
+
+  <section class="section" id="publier">
+    <h2>Publiez votre Script</h2>
+    <div style="text-align:center;">
+      <form onsubmit="publierScript(event)">
+        <input type="text" id="titre" placeholder="Titre du script" required><br>
+        <textarea id="description" placeholder="Résumé / Description" rows="5" required></textarea><br>
+        <input type="file" id="fichier" required><br>
+        <button class="submit-btn" type="submit">Envoyer</button>
+      </form>
+      <p id="msg-pub" style="color:green; font-weight: 500; margin-top: 1rem;"></p>
+    </div>
+  </section>
+
+  <section class="section" id="connexion">
+    <h2>Connexion</h2>
+    <div style="text-align:center;">
+      <form onsubmit="connexion(event)">
+        <input type="email" id="login-email" placeholder="Email" required><br>
+        <input type="password" id="login-password" placeholder="Mot de passe" required><br>
+        <button class="submit-btn" type="submit">Se connecter</button>
+      </form>
+      <p id="msg-login" style="color:green; font-weight: 500; margin-top: 1rem;"></p>
+    </div>
+  </section>
+
+  <footer>
+    © 2025 ScriptMaster. Tous droits réservés. | Mentions légales | Politique de confidentialité
+  </footer>
+
+  <script>
+    function scrollToSection(id) {
+      document.getElementById(id).scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function subscribe(event) {
+      event.preventDefault();
+      const email = document.getElementById('email').value;
+      if (email) {
+        document.getElementById('msg').textContent = `Merci pour votre inscription, ${email} !`;
+        document.getElementById('email').value = '';
+      }
+    }
+
+    function publierScript(event) {
+      event.preventDefault();
+      const titre = document.getElementById('titre').value;
+      const fichier = document.getElementById('fichier').value;
+      if (titre && fichier) {
+        document.getElementById('msg-pub').textContent = `Votre script "${titre}" a été soumis avec succès !`;
+      }
+    }
+
+    function connexion(event) {
+      event.preventDefault();
+      const email = document.getElementById('login-email').value;
+      document.getElementById('msg-login').textContent = `Bienvenue sur ScriptMaster, ${email} !`;
+    }
+  </script>
+</body>
+</html>
